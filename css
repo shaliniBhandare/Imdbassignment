@@ -1,0 +1,94 @@
+getJSON('http://www.omdbapi.com/?s=Back+to+the+future', function(res){
+  var movies = res.Search;
+  _.forEach(movies, function(movie){
+    var url = 'http://www.omdbapi.com/?tomatoes=true&i=' + movie.imdbID;
+    
+    getJSON(url, function(res){
+      var img = createImageFragment(res);
+      var selector = '[data-imdb="'+ res.imdbID +'"]';
+      document.querySelector(selector).appendChild(img);
+      
+      var rating = createRatingFragment(res);
+      document.querySelector(selector).appendChild(rating);
+      console.log(res);
+    });
+  })
+  
+  var dom = createDocFragment(movies);
+  document.querySelector('body').appendChild(dom);
+});
+
+function createRatingFragment(movie){
+  var docFragment = document.createDocumentFragment();
+
+  var div = document.createElement('DIV');
+  div.setAttribute("class", "rating");
+  docFragment.appendChild(div);
+  var text = document.createTextNode(movie.imbdRating);
+  div.appendChild(text);
+  
+  return docFragment;
+}
+
+function createImageFragment(movie){
+  var docFragment = document.createDocumentFragment();
+
+  var img = document.createElement('IMG');
+  img.setAttribute("src", movie.Poster);
+  docFragment.appendChild(img);
+  
+  return docFragment;
+}
+
+function createDocFragment(movies){
+  var docFragment = document.createDocumentFragment();
+  
+  _.forEach(movies, function(movie){
+    docFragment.appendChild(createMovieDiv(movie));
+  });
+  
+  return docFragment;
+}
+
+function createMovieDiv(movie){
+  var imdbURL = 'http://imdb.com/title/' + movie.imdbID;
+  
+  var div = document.createElement('DIV');
+  div.setAttribute("class", "movie");
+  div.setAttribute("data-imdb", movie.imdbID);
+  // docFragment.appendChild(div);
+
+  var h2 = document.createElement('H2');
+  h2.setAttribute("class", "title");
+  div.appendChild(h2);
+  var text = document.createTextNode(movie.Title);
+  h2.appendChild(text);
+
+  var div_0 = document.createElement('DIV');
+  div_0.setAttribute("class", "year");
+  div.appendChild(div_0);
+  var text_0 = document.createTextNode(movie.Year);
+  div_0.appendChild(text_0);
+
+  var a = document.createElement('A');
+  a.setAttribute("href", imdbURL);
+  a.setAttribute("target", "_blank");
+  div.appendChild(a);
+  var text_1 = document.createTextNode("IMDB");
+  a.appendChild(text_1);
+  
+  return div;
+}
+
+function getJSON(url, cb){
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+
+  xhr.onload = function() {
+    if (this.status >= 200 && this.status < 400) {
+      cb(JSON.parse(this.responseText));
+    } 
+  };
+  
+  xhr.send();
+}
